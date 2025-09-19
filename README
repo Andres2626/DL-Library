@@ -1,0 +1,133 @@
+Dinamic Loader Library (DL library)
+**Version: 0.01**
+
+0. Introduction
+
+DL library is a very very simple library of Dinamic Loading implemented for POSIX and Windows Platforms, This
+library offers a simple abstraction layer beetween LoadLibrary and dl**() functions. This is intended to 
+simplify the process of loading libraries at runtime, which is very useful in many programs where dynamic 
+linking from the linker is not a major advantage
+
+1. Copyright, license, etc...
+
+All library code is (C) Andres26 2025, but the code can be redistributed under the terms of the GPLv2 or later
+License.
+
+see './COPYING' file for more info.
+
+2. Dependencies
+
+The code has not important dependencies, but this requires Windows api or dl functions in POSIX.
+
+3. Contents of this project
+
+	* dl.h: Contains the main interface of the library, dl_mod is used for initialice library, load module and
+	these symbols. 'file' is the file from which the module is located for later loading by the library, 'state'
+	is the it is the flag that the library returns when it loads the module and 'handle' is the pointer used by
+	host library for load modules.
+	
+	Types of the library:
+	
+	dl_func_ptr as void* -> refers to the function pointer.
+
+	dl_handle_ptr as void* -> refers to the host library handle pointer.
+	
+	'dl.h' has several functions which are similar to the POSIX environment.
+	
+	int open_module(struct dl_mod *mod, const char *file, int)
+	
+		Open module from file, first this detect if mod is a valid pointer, and load module with host functions.
+		
+		Returns: 1 in case of fail, 0 on sucess.
+		
+		NOTE: To ensure compatibility with Windows and POSIX systems, the third parameter which belongs to the 
+		library loading mode, is not used. 
+	
+	dl_func_ptr sym_module(struct dl_mod* mod, const char *symbol)
+	
+		Return the pointer of a function in the module, 'symbol' is the name of the function/variable to call
+		from main program.
+	
+	int close_module(dl_handle_ptr handle)
+	
+		Close the opened module
+		
+	
+	* dl.c: Contains the source of prototypes of 'dl.h'
+	
+		NOTE: Open function as default is in RTDL_LAZY in POSIX systems.
+		
+4. Contact
+
+Any questions, doubts or clarifications, mail to:
+
+	andrescamorao9@gmail.com
+
+For bug tracking, please write to:
+
+	https://github.com/Andres2626/DL-Library/issues
+	
+5. Appendix A: Minimal example of use
+
+/* main.c -> main program */
+
+/* include library header file */
+#include "dl.h"
+
+/* type to function pointer */
+typedef void (*func)();
+
+int main(int argc, char **argv)
+{
+	struct dl_t mod; /* create library structure */
+	
+	/* open module */
+	if (!open_module(&mod, "./main.mod", 0)) {
+		fprintf(stderr, "Error loading main.mod"); /* error */
+		return 1;
+	}
+	
+	/* load arbitrary module function */
+	func module_main = (func)sym_module(&mod, "module_main");
+	if (!module_main) {
+		fprintf(stderr, "module_main() not found");
+		close_module(&mod);  /* close the module in case of error */
+		return 1;
+	}
+	
+	/* call to module function loaded */
+	module_main();
+	
+	/* close library */
+	close_module(&mod);
+	
+	return 0;
+}
+
+/* module_main.c -> module functions */
+
+/* 
+* '_EXPORT_DL' definition depends on the host compiler. On Windows compilers, __declspec(dllexport) 
+* is used to export a function, whereas on POSIX systems, __attribute__((visibility("default"))) 
+* is used. However, this is not universal across all platforms, so check carefully before exporting 
+* a function, as the library should, and only should, detect that the function was exported for 
+* DL; otherwise, the function will not be called and the library will generate an error.
+*/
+
+#include <stdio.h> /* printf function */
+
+/* function exported to DL */
+_EXPORT_DL void module_main() 
+{
+	/* print welcome message */
+	printf("Hello World from my module!\n");
+}
+	
+Andres26
+14-04-2025
+github.com/Andres2626/DL-Library
+
+
+	
+	
+
