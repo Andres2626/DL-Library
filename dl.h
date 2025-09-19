@@ -16,9 +16,10 @@ typedef struct dl_mod {
  * NOTE: To ensure compatibility with Windows and POSIX systems, the third parameter, 
  * which belongs to the library loading mode, is not used. 
  */
-int open_module(struct dl_mod *mod, const char *file, int);
-dl_func_ptr sym_module(struct dl_mod* mod, const char *symbol);
-int close_module(dl_handle_ptr handle);
+int dl_open_module(struct dl_mod *mod, const char *file, int);
+dl_func_ptr dl_sym_module(struct dl_mod* mod, const char *symbol);
+int dl_close_module(dl_handle_ptr handle);
+const char *dl_get_error();
 
 #endif /* !_DL_H */
 
