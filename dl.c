@@ -32,21 +32,21 @@ int dl_open_module(struct dl_mod* mod, const char* file, int mode)
 
     /* check valid dl pointer */
     if (!mod)
-        return -1;
+        return DL_INVALID_MEM;
 
     mod->file = file;
 
     /* load module */
     dl_func_ptr h = OPEN(mod->file);
     if (!h) {
-        mod->state = 1; /* error state */
-        return 1;
+        mod->state = DL_ERROR; /* error state */
+        return DL_ERROR;
     }
 
     /* yes! the module has loaded correcly */
-    mod->state = 0; /* loaded state */
+    mod->state = DL_OK; /* loaded state */
     mod->handle = h;
-    return 0;
+    return DL_OK;
 }
 
 dl_func_ptr dl_sym_module(struct dl_mod* mod, const char* symbol)
@@ -59,9 +59,9 @@ dl_func_ptr dl_sym_module(struct dl_mod* mod, const char* symbol)
     return ptr;
 }
 
-int dl_close_module(dl_handle_ptr handle) 
+int dl_close_module(struct dl_mod *mod)
 {
-    return CLOSE(handle);
+    return CLOSE(mod->handle);
 }
 
 const char *dl_get_error() 
